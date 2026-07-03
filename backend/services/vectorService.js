@@ -10,7 +10,7 @@
 // a mismatch between write-time and query-time embeddings.
 // ============================================================================
 
-const { ChromaClient } = require("chromadb");
+const { createChromaClient, dummyEmbeddingFunction } = require("../utils/chromaHelper");
 const { v4: uuidv4 } = require("uuid");
 const config = require("../config");
 const { embedText, embedBatch } = require("./embeddingService");
@@ -24,7 +24,7 @@ let collection = null;
  */
 function getClient() {
     if (!client) {
-        client = new ChromaClient({ path: config.chroma.url });
+        client = createChromaClient();
     }
     return client;
 }
@@ -43,6 +43,7 @@ async function initCollection() {
         collection = await chromaClient.getOrCreateCollection({
             name: config.chroma.collectionName,
             metadata: { "hnsw:space": "cosine" },
+            embeddingFunction: dummyEmbeddingFunction,
         });
 
         console.log(`[VectorService] Collection "${config.chroma.collectionName}" ready`);
@@ -155,6 +156,20 @@ async function deleteByChat(chatId) {
         const coll = await initCollection();
         await coll.delete({ where: { chatId } });
         console.log(`[VectorService] Deleted all chunks for chat ${chatId}`);
+
+        // Cascade delete: also remove long-term conversation memory windows
+        try {
+            const chromaClient = getClient();
+            const memColl = await chromaClient.getOrCreateCollection({
+                name: "conversation_memory",
+                metadata: { "hnsw:space": "cosine" },
+                embeddingFunction: dummyEmbeddingFunction,
+            });
+            await memColl.delete({ where: { conversationId: chatId } });
+            console.log(`[VectorService] Deleted conversation memory for chat ${chatId}`);
+        } catch (memError) {
+            console.warn(`[VectorService] Failed to delete conversation memory for chat ${chatId}:`, memError.message);
+        }
     } catch (error) {
         console.error(`[VectorService] Failed to delete chunks for chat ${chatId}:`, error.message);
     }

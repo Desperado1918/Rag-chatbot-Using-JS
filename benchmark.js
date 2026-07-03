@@ -88,7 +88,12 @@ async function benchmarkIngestion(method) {
     console.log(`\n  [Ingestion] Deleting existing collection "${collectionName}"...`);
 
     // Clean slate: delete the collection if it exists
-    const client = new ChromaClient({ path: CHROMA_URL });
+    const url = new URL(CHROMA_URL);
+    const client = new ChromaClient({
+        host: url.hostname,
+        port: url.port ? parseInt(url.port, 10) : undefined,
+        ssl: url.protocol === "https:",
+    });
     try {
         await client.deleteCollection({ name: collectionName });
         console.log(`  [Ingestion] Deleted existing collection.`);

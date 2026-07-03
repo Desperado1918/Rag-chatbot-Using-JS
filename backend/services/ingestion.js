@@ -11,7 +11,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { ChromaClient } = require("chromadb");
+const { createChromaClient, dummyEmbeddingFunction } = require("../utils/chromaHelper");
 const config = require("../config");
 const { createEmbedding } = require("./embedding");
 
@@ -408,11 +408,12 @@ function createHierarchicalChunks(text, sourceFilename) {
 // ============================================================================
 
 async function getOrCreateCollection(method) {
-    const client = new ChromaClient({ path: config.chroma.url });
+    const client = createChromaClient();
 
     return client.getOrCreateCollection({
         name: getCollectionName(method),
         metadata: { "hnsw:space": "cosine" },
+        embeddingFunction: dummyEmbeddingFunction,
     });
 }
 

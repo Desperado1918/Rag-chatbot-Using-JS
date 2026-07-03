@@ -1,0 +1,22 @@
+[
+  {
+    "_id": "6a47805e03865a28cdafbf73",
+    "title": "RAG-Token_vs_RAG-Sequence",
+    "messageCount": 2,
+    "lastMessagePreview": "How does the RAG-Sequence model differ from the RAG-Token model?",
+    "isPinned": false,
+    "model": "qwen2.5:7b",
+    "createdAt": "2026-07-03T09:26:54.784Z",
+    "updatedAt": "2026-07-03T09:28:04.881Z"
+  },
+  {
+    "_id": "6a4743f103865a28cdafbf70",
+    "title": "RAG Framework Explanation",
+    "messageCount": 2,
+    "lastMessagePreview": "What retriever does RAG use and how is it trained?",
+    "isPinned": false,
+    "model": "qwen2.5:7b",
+    "createdAt": "2026-07-03T05:09:05.110Z",
+    "updatedAt": "2026-07-03T05:10:24.368Z"
+  }
+]

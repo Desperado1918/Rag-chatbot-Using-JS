@@ -92,6 +92,13 @@ sidebarCloseBtn.addEventListener("click", () => {
     app.classList.add("sidebar-collapsed");
 });
 
+const brandName = document.querySelector(".brand-name");
+if (brandName) {
+    brandName.addEventListener("click", () => {
+        window.location.reload();
+    });
+}
+
 // ---------------------------------------------------------------------------
 // Conversation List — Fetch & Render
 // ---------------------------------------------------------------------------
@@ -1070,7 +1077,11 @@ if (headerChevronBtn) {
     headerChevronBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         if (currentConversationId) {
-            showContextMenu(e, currentConversationId, headerChevronBtn);
+            if (!contextMenu.hidden && contextMenuTargetId === currentConversationId) {
+                contextMenu.hidden = true;
+            } else {
+                showContextMenu(e, currentConversationId, headerChevronBtn);
+            }
         }
     });
 }

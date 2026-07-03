@@ -8,7 +8,7 @@
 //   4. Hierarchical parent expansion & deduplication
 // ============================================================================
 
-const { ChromaClient } = require("chromadb");
+const { createChromaClient, dummyEmbeddingFunction } = require("../utils/chromaHelper");
 const config = require("../config");
 const { createEmbedding } = require("./embedding");
 const { createServiceError } = require("../utils/errors");
@@ -44,10 +44,13 @@ function distanceToSimilarity(distance) {
  * @returns {Promise<Object>} - ChromaDB collection handle.
  */
 async function getCollection(collectionName) {
-    const client = new ChromaClient({ path: config.chroma.url });
+    const client = createChromaClient();
 
     try {
-        return await client.getCollection({ name: collectionName });
+        return await client.getCollection({
+            name: collectionName,
+            embeddingFunction: dummyEmbeddingFunction,
+        });
     } catch (error) {
         throw createServiceError(
             `Chroma collection "${collectionName}" was not found. Run ingestion first.`

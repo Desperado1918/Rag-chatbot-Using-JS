@@ -6,7 +6,7 @@
 // `conversation_memory` collection, separate from document embeddings.
 // ============================================================================
 
-const { ChromaClient } = require("chromadb");
+const { createChromaClient, dummyEmbeddingFunction } = require("../utils/chromaHelper");
 const config = require("../config");
 const { createEmbedding } = require("./embedding");
 const Message = require("../models/Message");
@@ -17,11 +17,12 @@ const MEMORY_COLLECTION = "conversation_memory";
  * Get or create the conversation memory collection in ChromaDB.
  */
 async function getMemoryCollection() {
-    const client = new ChromaClient({ path: config.chroma.url });
+    const client = createChromaClient();
 
     return client.getOrCreateCollection({
         name: MEMORY_COLLECTION,
         metadata: { "hnsw:space": "cosine" },
+        embeddingFunction: dummyEmbeddingFunction,
     });
 }
 
