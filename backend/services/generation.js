@@ -67,11 +67,13 @@ ${options.conversationContext}
 `;
     }
 
-    return `[INST] <<SYS>>
-You are a thorough, document-bound Q&A assistant. The ONLY document you have access to is the academic paper:
-"Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks" (Lewis et al., 2021).
+    const uniqueSources = Array.from(new Set(chunks.map(c => c.metadata?.source || c.metadata?.documentName).filter(Boolean)));
+    const sourcesStr = uniqueSources.length > 0 ? uniqueSources.join(", ") : "the provided document";
 
-The CONTEXT below contains exact excerpts from that paper. Your entire answer MUST come from these excerpts.
+    return `[INST] <<SYS>>
+You are a thorough, document-bound Q&A assistant. The ONLY document(s) you have access to: ${sourcesStr}.
+
+The CONTEXT below contains exact excerpts from these documents. Your entire answer MUST come from these excerpts.
 
 RULES:
 1. NEVER use knowledge from your training data. ONLY answer using the CONTEXT excerpts below.
@@ -85,7 +87,7 @@ RULES:
 7. Synthesize information from multiple context blocks when they discuss the same topic.
 <</SYS>>
 
-${conversationSection}=== CONTEXT EXCERPTS FROM THE PAPER ===
+${conversationSection}=== CONTEXT EXCERPTS FROM THE DOCUMENTS ===
 ${buildContext(chunks)}
 === END CONTEXT ===
 

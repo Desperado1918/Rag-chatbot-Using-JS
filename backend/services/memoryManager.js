@@ -41,7 +41,7 @@ async function indexConversationMemory(conversationId, options = {}) {
     const windowOverlap = options.windowOverlap || 1;
 
     try {
-        const messages = await Message.find({ conversationId })
+        const messages = await Message.find({ chatId: conversationId })
             .sort({ createdAt: 1 })
             .lean();
 

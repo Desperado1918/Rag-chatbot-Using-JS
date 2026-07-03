@@ -462,18 +462,34 @@ async function ingestDocument(
     console.log("Vector records:", records.length);
     console.log("Collection:", getCollectionName(method));
 
+    const ids = [];
+    const embeddings = [];
+    const documents = [];
+    const metadatas = [];
+
+    console.log(`[Ingestion] Generating embeddings for ${records.length} records...`);
     for (let i = 0; i < records.length; i++) {
         const record = records[i];
         const embedding = await createEmbedding(record.document);
+        ids.push(record.id);
+        embeddings.push(embedding);
+        documents.push(record.document);
+        metadatas.push(record.metadata);
 
+        if ((i + 1) % 50 === 0 || i === records.length - 1) {
+            console.log(`  Embedded ${i + 1}/${records.length} records`);
+        }
+    }
+
+    if (records.length > 0) {
+        console.log(`[Chroma] Upserting ${records.length} records in batch to collection ${getCollectionName(method)}...`);
         await collection.upsert({
-            ids: [record.id],
-            embeddings: [embedding],
-            documents: [record.document],
-            metadatas: [record.metadata],
+            ids,
+            embeddings,
+            documents,
+            metadatas,
         });
-
-        console.log(`Stored vector ${i + 1}/${records.length}`);
+        console.log("[Chroma] Ingestion upsert batch completed.");
     }
 
     return {

@@ -20,6 +20,8 @@ const { chunkConversationTurn } = require("./chunkingService");
 const { syncMetadata } = require("./metadataMirror");
 const { maybeGenerateTitle } = require("./titleGenerator");
 const { performHybridDualRetrieval } = require("./hybridRetrieval");
+const { indexConversationMemory } = require("./memoryManager");
+const { maybeSummarizeConversation } = require("./conversationSummarizer");
 const config = require("../config");
 
 /**
@@ -146,11 +148,17 @@ async function handleMessage(chatId, userContent, handlers = {}, chunkingMethod 
     syncMetadata();
 
     // -----------------------------------------------------------------------
-    // Step 8: Maybe generate title (async, non-blocking)
+    // Step 8: Maybe generate title, index memory, and summarize (async, non-blocking)
     // -----------------------------------------------------------------------
     setImmediate(() => {
         maybeGenerateTitle(chatId).catch((err) => {
             console.error("[ChatService] Title generation failed:", err.message);
+        });
+        indexConversationMemory(chatId).catch((err) => {
+            console.error("[ChatService] Conversation memory indexing failed:", err.message);
+        });
+        maybeSummarizeConversation(chatId).catch((err) => {
+            console.error("[ChatService] Conversation summarization failed:", err.message);
         });
     });
 

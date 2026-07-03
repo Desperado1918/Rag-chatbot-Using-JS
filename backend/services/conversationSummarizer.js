@@ -8,7 +8,7 @@
 
 const axios = require("axios");
 const config = require("../config");
-const Conversation = require("../models/Conversation");
+const Chat = require("../models/Chat");
 const Message = require("../models/Message");
 const ConversationSummary = require("../models/ConversationSummary");
 
@@ -27,7 +27,7 @@ const ConversationSummary = require("../models/ConversationSummary");
  */
 async function maybeSummarizeConversation(conversationId) {
     try {
-        const messageCount = await Message.countDocuments({ conversationId });
+        const messageCount = await Message.countDocuments({ chatId: conversationId });
 
         if (messageCount < config.conversation.summaryThreshold) {
             return null; // Not enough messages to warrant summarization
@@ -50,7 +50,7 @@ async function maybeSummarizeConversation(conversationId) {
         }
 
         // Fetch messages to summarize (all except the last N)
-        const messages = await Message.find({ conversationId })
+        const messages = await Message.find({ chatId: conversationId })
             .sort({ createdAt: 1 })
             .lean();
 

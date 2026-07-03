@@ -3,7 +3,7 @@
 // ============================================================================
 
 const { getRecentEvents } = require("../services/analytics");
-const Conversation = require("../models/Conversation");
+const Chat = require("../models/Chat");
 const Document = require("../models/Document");
 const Message = require("../models/Message");
 
@@ -13,7 +13,7 @@ const Message = require("../models/Message");
 async function getAnalyticsDashboard(req, res) {
     try {
         // Fetch DB aggregates
-        const totalConversations = await Conversation.countDocuments();
+        const totalConversations = await Chat.countDocuments();
         const totalDocuments = await Document.countDocuments();
         const totalMessages = await Message.countDocuments();
 

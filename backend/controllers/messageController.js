@@ -319,8 +319,14 @@ async function retryMessage(req, res) {
             }));
 
             await storeChunks(chunkObjects);
+
+            // Also index memory and trigger summarization asynchronously
+            const { indexConversationMemory } = require("../services/memoryManager");
+            const { maybeSummarizeConversation } = require("../services/conversationSummarizer");
+            await indexConversationMemory(chatIdStr);
+            await maybeSummarizeConversation(chatIdStr);
         } catch (error) {
-            console.error("[MessageController] Failed to store conversation chunks on retry:", error.message);
+            console.error("[MessageController] Failed to store conversation chunks or index memory on retry:", error.message);
         }
     });
 

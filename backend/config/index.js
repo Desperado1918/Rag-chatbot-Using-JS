@@ -66,9 +66,13 @@ const config = {
     // Retrieval Tuning
     // -----------------------------------------------------------------------
     retrieval: {
-        topK: 5,                     // Number of chunks to retrieve
-        similarityThreshold: 0.40,   // Minimum cosine similarity to pass
-        slidingWindowSize: 10,       // Recent messages to include in prompt
+        topK: 5,                     // Number of chunks to retrieve (legacy fallback)
+        retrievalCount: parseInt(process.env.RAG_RETRIEVAL_COUNT, 10) || 10, // Raw vectors retrieved from ChromaDB
+        topNChunks: parseInt(process.env.RAG_TOP_N_CHUNKS, 10) || 5,         // Chunks sent to LLM after re-ranking
+        similarityThreshold: parseFloat(process.env.RAG_SIMILARITY_THRESHOLD) || 0.40, // Minimum cosine similarity to pass
+        hybridWeightSemantic: parseFloat(process.env.RAG_HYBRID_WEIGHT_SEMANTIC) || 0.7,
+        hybridWeightKeyword: parseFloat(process.env.RAG_HYBRID_WEIGHT_KEYWORD) || 0.3,
+        slidingWindowSize: parseInt(process.env.RAG_SLIDING_WINDOW_SIZE, 10) || 10, // Recent messages to include in prompt
     },
 
     // -----------------------------------------------------------------------
@@ -77,6 +81,10 @@ const config = {
     chunking: {
         maxTokens: 500,              // ~500 tokens per chunk
         overlapTokens: 50,           // ~50 token overlap
+        standardChunkSize: parseInt(process.env.RAG_STANDARD_CHUNK_SIZE, 10) || 1000, // Character length standard chunks
+        parentChunkSize: parseInt(process.env.RAG_PARENT_CHUNK_SIZE, 10) || 2000,     // Character length parent chunks
+        childChunkSize: parseInt(process.env.RAG_CHILD_CHUNK_SIZE, 10) || 400,       // Character length child chunks
+        overlapSize: parseInt(process.env.RAG_OVERLAP_SIZE, 10) || 200,              // Character length overlap
         separators: ["\n\n", "\n", ". ", " "],
     },
 
@@ -103,6 +111,7 @@ const config = {
     conversation: {
         titleGenerationThreshold: 1,  // Generate title after first exchange
         maxTitleLength: 7,            // Max words in auto-generated title
+        summaryThreshold: parseInt(process.env.RAG_SUMMARY_THRESHOLD, 10) || 20, // Summarize after 20 messages
     },
 
     // -----------------------------------------------------------------------
