@@ -26,6 +26,7 @@ const searchRoutes = require("./routes/search");
 const debugRoutes = require("./routes/debug");
 const documentRoutes = require("./routes/documents");
 const messageRoutes = require("./routes/messages");
+const inspectorRoutes = require("./routes/inspector");
 
 // ---------------------------------------------------------------------------
 // Logger
@@ -64,6 +65,7 @@ app.use("/api/chats", chatRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/debug", debugRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/inspector", inspectorRoutes);
 app.use("/api", messageRoutes);
 
 // Health check — surfaces database status including memory-server fallback

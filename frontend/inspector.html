@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Pipeline Inspector & Sandbox</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="inspector.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-brand">
+                <span class="brand-icon">🔬</span>
+                <span class="brand-name" id="logoText">Pipeline Inspector</span>
+            </div>
+            <div class="header-nav">
+                <a href="/" class="btn btn-secondary">← Back to Chat</a>
+            </div>
+        </header>
+
+        <!-- Main Layout Grid -->
+        <main class="dashboard-grid">
+            
+            <!-- Column 1: File Manager -->
+            <section class="grid-section file-manager-card">
+                <div class="card-header">
+                    <h2>📁 Context Document Manager</h2>
+                    <span class="file-count-badge" id="fileCountBadge">0 / 5 Files</span>
+                </div>
+                
+                <!-- Upload Drop Zone -->
+                <div class="upload-zone" id="uploadZone">
+                    <input type="file" id="fileInput" accept="application/pdf" style="display: none;">
+                    <div class="upload-prompt">
+                        <span class="upload-icon">📥</span>
+                        <p>Drag & Drop a PDF or <strong>Browse</strong></p>
+                        <span class="upload-limit">Max 50MB per PDF</span>
+                    </div>
+                </div>
+
+                <!-- Ingestion Chunk Mode Config -->
+                <div class="control-group">
+                    <label class="control-label" for="chunkingMethodSelect">Default Chunking Strategy</label>
+                    <select id="chunkingMethodSelect" class="select-input">
+                        <option value="hierarchical" selected>Hierarchical (Parent/Child)</option>
+                        <option value="standard">Standard (Flat)</option>
+                    </select>
+                </div>
+
+                <!-- Files List -->
+                <div class="files-list-container">
+                    <ul class="files-list" id="filesList">
+                        <li class="empty-list-placeholder">No documents uploaded yet. Upload up to 5 PDFs to begin.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Column 2: Pipeline Inspector / Debug Panel -->
+            <section class="grid-section inspector-card">
+                <div class="card-header">
+                    <h2>⚙️ Pipeline Inspector</h2>
+                    <span class="active-doc-label" id="activeDocLabel">No Active Document</span>
+                </div>
+
+                <!-- Tabs -->
+                <div class="inspector-tabs">
+                    <button class="tab-btn active" data-tab="parsingTab">Stage 1: Parsing</button>
+                    <button class="tab-btn" data-tab="embeddingTab">Stage 2: Embedding</button>
+                    <button class="tab-btn" data-tab="retrievalTab">Stage 3: Retrieval</button>
+                </div>
+
+                <!-- Tab Contents -->
+                <div class="tab-contents">
+                    
+                    <!-- Stage 1: Parsing -->
+                    <div class="tab-panel active" id="parsingTab">
+                        <div class="parsing-stats-grid">
+                            <div class="stat-box">
+                                <span class="stat-title">Characters</span>
+                                <span class="stat-val" id="parseCharCount">-</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-title">Pages</span>
+                                <span class="stat-val" id="parsePageCount">-</span>
+                            </div>
+                        </div>
+
+                        <h3>Page-by-Page Breakdown</h3>
+                        <div class="page-breakdown-list" id="pageBreakdownList">
+                            <p class="placeholder-text">Ingest a PDF to inspect its page breakdown.</p>
+                        </div>
+
+                        <h3>Parsed Raw Text Preview</h3>
+                        <pre class="raw-preview-box" id="parsedTextPreview">Ingest a PDF to view extracted text preview.</pre>
+                    </div>
+
+                    <!-- Stage 2: Embedding -->
+                    <div class="tab-panel" id="embeddingTab">
+                        <div class="embedding-stats-grid">
+                            <div class="stat-box">
+                                <span class="stat-title">Total Chunks</span>
+                                <span class="stat-val" id="embedChunkCount">-</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-title">Vector Dim</span>
+                                <span class="stat-val" id="embedVectorDim">-</span>
+                            </div>
+                        </div>
+
+                        <h3>Real-time Ingestion Logs</h3>
+                        <div class="console-box" id="embedLogsConsole">
+                            <span class="console-placeholder">Waiting for ingestion run...</span>
+                        </div>
+                    </div>
+
+                    <!-- Stage 3: Retrieval -->
+                    <div class="tab-panel" id="retrievalTab">
+                        <h3>Last Sandbox Query Retrieval Logs</h3>
+                        <div class="retrieval-logs" id="retrievalLogs">
+                            <p class="placeholder-text">Run a query in the QA Sandbox to inspect retrieval similarity scores.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Column 3: QA Sandbox Terminal -->
+            <section class="grid-section sandbox-card">
+                <div class="card-header">
+                    <h2>💬 QA Sandbox Terminal</h2>
+                </div>
+
+                <!-- Sandbox Chat -->
+                <div class="sandbox-chat-area" id="sandboxChatArea">
+                    <div class="system-welcome-msg">
+                        <h3>Isolated QA Environment</h3>
+                        <p>Ask questions targeting the active document. Vector searches are filtered strictly to your active PDF, preventing context leakage.</p>
+                    </div>
+                </div>
+
+                <!-- Input area -->
+                <div class="sandbox-input-row">
+                    <textarea class="textarea-input" id="sandboxInput" placeholder="Ask a question about the active PDF..." rows="2" disabled></textarea>
+                    <button class="btn btn-primary" id="sandboxSendBtn" disabled>Send</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="inspector.js"></script>
+</body>
+</html>
