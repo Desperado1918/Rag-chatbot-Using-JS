@@ -2,12 +2,12 @@
   {
     "_id": "6a47917103865a28cdafbf76",
     "title": "Retrieval-Augmented Generation Explanation",
-    "messageCount": 2,
-    "lastMessagePreview": "What is Retrieval-Augmented Generation?",
+    "messageCount": 4,
+    "lastMessagePreview": "Can u tell me facts about Lionel Messi?",
     "isPinned": false,
     "model": "qwen2.5:7b",
     "createdAt": "2026-07-03T10:39:45.913Z",
-    "updatedAt": "2026-07-03T10:40:59.558Z"
+    "updatedAt": "2026-07-06T07:37:48.870Z"
   },
   {
     "_id": "6a47805e03865a28cdafbf73",
