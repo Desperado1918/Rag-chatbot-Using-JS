@@ -3,6 +3,7 @@
 // ============================================================================
 
 const mongoose = require("mongoose");
+const config = require("../config");
 
 const chatSchema = new mongoose.Schema(
     {
@@ -30,7 +31,7 @@ const chatSchema = new mongoose.Schema(
         },
         model: {
             type: String,
-            default: "qwen2.5:7b",
+            default: () => config.ollama.chatModel,
         },
         titleGenerated: {
             type: Boolean,

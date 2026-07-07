@@ -63,6 +63,94 @@ async function getChat(req, res) {
         .sort({ createdAt: 1 })
         .lean();
 
+    // Fallback for legacy messages where sources is empty/missing but retrievedChunkIds exists
+    const legacyMsgs = messages.filter(
+        (m) =>
+            m.role === "assistant" &&
+            (!m.sources || m.sources.length === 0) &&
+            m.retrievedChunkIds &&
+            m.retrievedChunkIds.length > 0
+    );
+
+    if (legacyMsgs.length > 0) {
+        try {
+            const allChunkIds = [];
+            for (const msg of legacyMsgs) {
+                allChunkIds.push(...msg.retrievedChunkIds);
+            }
+            const uniqueChunkIds = Array.from(new Set(allChunkIds));
+
+            if (uniqueChunkIds.length > 0) {
+                const { getCollection } = require("../services/retrieval");
+                const chunksMap = new Map();
+
+                for (const id of uniqueChunkIds) {
+                    if (chunksMap.has(id)) continue;
+
+                    const isParentId = id.includes("-parent-") && !id.includes("-child-");
+
+                    if (isParentId) {
+                        try {
+                            const collection = await getCollection("notes_hierarchical");
+                            const resData = await collection.get({
+                                where: { parentId: id },
+                                include: ["documents", "metadatas"],
+                            });
+                            if (resData && resData.ids && resData.ids.length > 0) {
+                                const meta = resData.metadatas[0] || {};
+                                chunksMap.set(id, {
+                                    id,
+                                    text: meta.parentText || resData.documents[0],
+                                    metadata: meta,
+                                    similarity: null,
+                                });
+                            }
+                        } catch (err) {
+                            console.warn(`[getChat Fallback] Could not fetch parentId ${id} from notes_hierarchical:`, err.message);
+                        }
+                    } else {
+                        const collectionsToTry = ["notes_standard", "notes_hierarchical"];
+                        for (const collName of collectionsToTry) {
+                            if (chunksMap.has(id)) break;
+                            try {
+                                const collection = await getCollection(collName);
+                                const resData = await collection.get({
+                                    ids: [id],
+                                    include: ["documents", "metadatas"],
+                                });
+                                if (resData && resData.ids && resData.ids.length > 0) {
+                                    chunksMap.set(id, {
+                                        id,
+                                        text: resData.documents[0],
+                                        metadata: resData.metadatas[0] || {},
+                                        similarity: null,
+                                    });
+                                }
+                            } catch (err) {
+                                // Silent warning/retry on next collection
+                            }
+                        }
+                    }
+                }
+
+                for (const msg of messages) {
+                    if (
+                        msg.role === "assistant" &&
+                        (!msg.sources || msg.sources.length === 0) &&
+                        msg.retrievedChunkIds &&
+                        msg.retrievedChunkIds.length > 0
+                    ) {
+                        msg.sources = msg.retrievedChunkIds
+                            .map((id) => chunksMap.get(id))
+                            .filter(Boolean);
+                    }
+                }
+            }
+        } catch (fallbackErr) {
+            console.error("[getChat Fallback] Failed to hydrate legacy sources:", fallbackErr.message);
+        }
+    }
+
     res.json({ chat, messages });
 }
 

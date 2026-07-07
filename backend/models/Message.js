@@ -25,6 +25,17 @@ const messageSchema = new mongoose.Schema(
             type: [String],
             default: [],
         },
+        sources: {
+            type: [
+                {
+                    id: String,
+                    text: String,
+                    similarity: Number,
+                    metadata: mongoose.Schema.Types.Mixed,
+                },
+            ],
+            default: [],
+        },
         isEdited: {
             type: Boolean,
             default: false,

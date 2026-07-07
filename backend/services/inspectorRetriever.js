@@ -24,9 +24,10 @@ async function retrieveForFile(queryText, fileId, options = {}) {
 
     const retrievalCount = options.retrievalCount || config.retrieval.retrievalCount || 5;
 
+    // Over-fetch child hits before grouping/deduping
     const queryOptions = {
         queryEmbeddings: [queryEmbedding],
-        nResults: retrievalCount,
+        nResults: retrievalCount * 3,
         where: { file_id: fileId.toString() }, // Strict single-PDF isolation
     };
 
@@ -44,8 +45,6 @@ async function retrieveForFile(queryText, fileId, options = {}) {
     const scoredChunks = [];
 
     for (let i = 0; i < ids.length; i++) {
-        // Cosine distance maps to similarity: similarity = 1 - distance
-        // Chroma returns distance = 1 - cosine_similarity. So cosine_similarity = 1 - distance
         const distance = distances[i] ?? 1;
         const similarity = Math.max(0, Math.min(1, 1 - distance));
 
@@ -58,8 +57,47 @@ async function retrieveForFile(queryText, fileId, options = {}) {
         });
     }
 
-    // Sort by similarity descending
-    return scoredChunks.sort((a, b) => b.similarity - a.similarity);
+    // Sort by similarity descending first so max similarity comes first
+    scoredChunks.sort((a, b) => b.similarity - a.similarity);
+
+    // Check if hierarchical chunking is active
+    const isHierarchical = scoredChunks.some(
+        (c) => c.metadata && c.metadata.chunkingMethod === "hierarchical"
+    );
+
+    if (isHierarchical) {
+        const parentMap = new Map();
+
+        for (const childHit of scoredChunks) {
+            const parentId = childHit.metadata.parentId;
+            const parentText = childHit.metadata.parentText;
+
+            if (!parentId || !parentText || parentMap.has(parentId)) {
+                continue;
+            }
+
+            parentMap.set(parentId, {
+                id: parentId,
+                text: parentText,
+                similarity: childHit.similarity,
+                distance: childHit.distance,
+                metadata: {
+                    source: childHit.metadata.source,
+                    file_id: childHit.metadata.file_id,
+                    parentId,
+                    parentNumber: childHit.metadata.parentNumber,
+                    matchedChildNumber: childHit.metadata.childNumber,
+                    pageNumber: childHit.metadata.pageNumber,
+                    chunkingMethod: "hierarchical",
+                },
+            });
+        }
+
+        const deduplicated = Array.from(parentMap.values());
+        return deduplicated.slice(0, retrievalCount);
+    }
+
+    return scoredChunks.slice(0, retrievalCount);
 }
 
 module.exports = { retrieveForFile };

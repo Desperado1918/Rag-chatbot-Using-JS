@@ -615,12 +615,28 @@ function appendSources(body, sources) {
         card.style.gap = "8px";
 
         const docName = src.metadata?.documentName || src.metadata?.source || src.source || "Document";
-        const chunkIdx = src.metadata?.chunkIndex !== undefined ? `Chunk ${src.metadata.chunkIndex}` : "";
+
+        // Resolve chunk label from real backend field names
+        // Standard chunks: chunkNumber | Hierarchical chunks: parentNumber + matchedChildNumber
+        let chunkLabel = "";
+        if (src.metadata?.chunkNumber !== undefined) {
+            chunkLabel = `Chunk ${src.metadata.chunkNumber}`;
+        } else if (src.metadata?.parentNumber !== undefined) {
+            chunkLabel = `Parent ${src.metadata.parentNumber}`;
+            if (src.metadata?.matchedChildNumber !== undefined) {
+                chunkLabel += ` · Child ${src.metadata.matchedChildNumber}`;
+            }
+        }
+
+        // Append page number when present (both chunking methods store it)
+        const pageLabel = src.metadata?.pageNumber !== undefined ? `p.${src.metadata.pageNumber}` : "";
+        const locationLabel = [chunkLabel, pageLabel].filter(Boolean).join(" · ");
+
         const simScore = typeof src.similarity === "number" ? `sim ${(src.similarity * 100).toFixed(0)}%` : `sim ${src.similarity || "N/A"}`;
 
         card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <span class="source-loc" style="font-weight: 500;">📄 ${escapeHtml(docName)} ${chunkIdx ? `· ${chunkIdx}` : ""}</span>
+                <span class="source-loc" style="font-weight: 500;">📄 ${escapeHtml(docName)} ${locationLabel ? `· ${locationLabel}` : ""}</span>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span class="source-score">${simScore}</span>
                     <span class="source-toggle-icon" style="transition: transform 0.2s; font-size: 10px; color: var(--text-muted);">▶</span>

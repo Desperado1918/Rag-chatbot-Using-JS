@@ -300,6 +300,12 @@ async function retryMessage(req, res) {
         role: "assistant",
         content: fullResponse,
         retrievedChunkIds,
+        sources: retrievedChunks.map((c) => ({
+            id: c.id,
+            text: c.text,
+            similarity: c.similarity,
+            metadata: c.metadata,
+        })),
     });
 
     // Chunk the new turn and store in ChromaDB (async)

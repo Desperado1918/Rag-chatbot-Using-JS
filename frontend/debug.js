@@ -100,7 +100,16 @@ async function loadChunks(chatId) {
                         </div>
                         <div class="meta-item">
                             <span class="meta-label">Chunk Index</span>
-                            <span class="meta-value">${meta.chunkIndex !== undefined ? meta.chunkIndex : "N/A"}</span>
+                            <span class="meta-value">
+                                ${meta.chunkIndex !== undefined ? `Msg Chunk ${meta.chunkIndex}` : 
+                                  meta.chunkNumber !== undefined ? `Chunk ${meta.chunkNumber}` : 
+                                  (meta.parentNumber !== undefined && meta.childNumber !== undefined) ? `Parent ${meta.parentNumber}, Child ${meta.childNumber}` : 
+                                  meta.parentNumber !== undefined ? `Parent ${meta.parentNumber}` : "N/A"}
+                            </span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Page Number</span>
+                            <span class="meta-value">${meta.pageNumber !== undefined ? meta.pageNumber : "N/A"}</span>
                         </div>
                         <div class="meta-item">
                             <span class="meta-label">Created At</span>
@@ -134,7 +143,7 @@ async function loadChunks(chatId) {
 chatSelect.addEventListener("change", (e) => {
     const chatId = e.target.value;
     loadChunks(chatId);
-    
+
     // Update query param
     const url = new URL(window.location);
     if (chatId) {

@@ -110,6 +110,12 @@ async function handleMessage(chatId, userContent, handlers = {}, chunkingMethod 
         role: "assistant",
         content: fullResponse,
         retrievedChunkIds,
+        sources: retrievedChunks.map((c) => ({
+            id: c.id,
+            text: c.text,
+            similarity: c.similarity,
+            metadata: c.metadata,
+        })),
     });
 
     // -----------------------------------------------------------------------

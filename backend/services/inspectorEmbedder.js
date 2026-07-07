@@ -145,6 +145,7 @@ function createHierarchicalChunks(pages, sourceFilename, fileId) {
                         file_id: fileId.toString(),
                         parentId,
                         parentNumber,
+                        parentText,
                         childNumber: childIndex + 1,
                         pageNumber: page.pageNumber,
                     },

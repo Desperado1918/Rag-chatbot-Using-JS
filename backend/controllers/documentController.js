@@ -36,6 +36,7 @@ async function uploadDocument(req, res) {
             const startTime = Date.now();
             const result = await ingestDocument(req.file.path, {
                 chunkingMethod,
+                fileId: doc._id,
             });
 
             doc.embeddingStatus = "completed";

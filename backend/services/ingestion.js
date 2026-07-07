@@ -177,19 +177,38 @@ async function loadPdfText(filePath) {
 
         const pageText = pageLines.join("\n");
         if (pageText.trim()) {
-            allPageTexts.push(pageText.trim());
+            allPageTexts.push({ text: pageText.trim(), pageNumber: pageNum });
         }
     }
 
-    const fullText = allPageTexts.join("\n\n");
+    const cleanedPages = [];
+    for (const page of allPageTexts) {
+        const bibPattern = /^(?:\d{1,2}\.?\s*)?(?:references|bibliography|works\s+cited)\s*$/im;
+        const bibMatch = page.text.match(bibPattern);
+        
+        let textToClean = page.text;
+        let shouldStop = false;
+        
+        if (bibMatch) {
+            textToClean = page.text.slice(0, bibMatch.index).trim();
+            shouldStop = true;
+        }
 
-    const rawCleaned = fullText
-        .replace(/\r\n/g, "\n")
-        .replace(/[ \t]+\n/g, "\n")
-        .replace(/\n{3,}/g, "\n\n")
-        .trim();
+        const cleanedText = cleanExtractedText(textToClean);
+        if (cleanedText) {
+            cleanedPages.push({
+                text: cleanedText,
+                pageNumber: page.pageNumber,
+            });
+        }
 
-    return cleanExtractedText(rawCleaned);
+        if (shouldStop) {
+            console.log(`[Bibliography Filter] Truncated document at page ${page.pageNumber} due to bibliography header.`);
+            break;
+        }
+    }
+
+    return cleanedPages;
 }
 
 // ============================================================================
@@ -357,48 +376,65 @@ function safeSplitText(text, maxSize, overlapSize = config.chunking.overlapSize)
 // Chunking: Standard (flat) and Hierarchical (parent/child)
 // ============================================================================
 
-function createStandardRecords(text, sourceFilename) {
-    const chunks = safeSplitText(text, config.chunking.standardChunkSize);
-
-    return chunks.map((chunk, index) => ({
-        id: `${sourceFilename}-standard-chunk-${index + 1}`,
-        document: chunk,
-        metadata: {
-            chunkingMethod: "standard",
-            source: sourceFilename,
-            chunkNumber: index + 1,
-        },
-    }));
-}
-
-function createHierarchicalChunks(text, sourceFilename) {
-    const parentChunks = safeSplitText(text, config.chunking.parentChunkSize);
+function createStandardRecords(pages, sourceFilename, fileId) {
     const records = [];
+    let globalIndex = 0;
 
-    parentChunks.forEach((parentText, parentIndex) => {
-        const parentNumber = parentIndex + 1;
-        const parentId = `${sourceFilename}-parent-${parentNumber}`;
-
-        const childChunks = safeSplitText(
-            parentText,
-            config.chunking.childChunkSize
-        );
-
-        childChunks.forEach((childText, childIndex) => {
+    for (const page of pages) {
+        const chunks = safeSplitText(page.text, config.chunking.standardChunkSize);
+        for (const chunk of chunks) {
             records.push({
-                id: `${parentId}-child-${childIndex + 1}`,
-                document: childText,
+                id: `${sourceFilename}-standard-chunk-${globalIndex + 1}`,
+                document: chunk,
                 metadata: {
-                    chunkingMethod: "hierarchical",
+                    chunkingMethod: "standard",
                     source: sourceFilename,
-                    parentId,
-                    parentNumber,
-                    childNumber: childIndex + 1,
-                    parentText,
+                    file_id: fileId ? fileId.toString() : sourceFilename,
+                    chunkNumber: globalIndex + 1,
+                    pageNumber: page.pageNumber,
                 },
             });
-        });
-    });
+            globalIndex++;
+        }
+    }
+    return records;
+}
+
+function createHierarchicalChunks(pages, sourceFilename, fileId) {
+    const records = [];
+    let globalParentIndex = 0;
+
+    for (const page of pages) {
+        const parentChunks = safeSplitText(page.text, config.chunking.parentChunkSize);
+
+        for (const parentText of parentChunks) {
+            const parentNumber = globalParentIndex + 1;
+            const parentId = `${sourceFilename}-parent-${parentNumber}`;
+            globalParentIndex++;
+
+            const childChunks = safeSplitText(
+                parentText,
+                config.chunking.childChunkSize
+            );
+
+            childChunks.forEach((childText, childIndex) => {
+                records.push({
+                    id: `${parentId}-child-${childIndex + 1}`,
+                    document: childText,
+                    metadata: {
+                        chunkingMethod: "hierarchical",
+                        source: sourceFilename,
+                        file_id: fileId ? fileId.toString() : sourceFilename,
+                        parentId,
+                        parentNumber,
+                        childNumber: childIndex + 1,
+                        parentText,
+                        pageNumber: page.pageNumber,
+                    },
+                });
+            });
+        }
+    }
 
     return records;
 }
@@ -421,26 +457,20 @@ async function getOrCreateCollection(method) {
 // Ingestion Pipeline
 // ============================================================================
 
-async function buildRecords(filePath, method) {
+async function buildRecords(filePath, method, fileId) {
     const sourceFilename = path.basename(filePath);
-    const text = await loadPdfText(filePath);
+    const pages = await loadPdfText(filePath);
 
-    fs.writeFileSync("parsed.txt", text);
-    console.log("Parsed text saved to parsed.txt");
-
-    console.log(
-        "Contains 'Retrieval-Augmented Generation':",
-        text.includes("Retrieval-Augmented Generation")
-    );
+    const totalChars = pages.reduce((sum, p) => sum + p.text.length, 0);
 
     const records =
         method === "standard"
-            ? createStandardRecords(text, sourceFilename)
-            : createHierarchicalChunks(text, sourceFilename);
+            ? createStandardRecords(pages, sourceFilename, fileId)
+            : createHierarchicalChunks(pages, sourceFilename, fileId);
 
     return {
         sourceFilename,
-        textLength: text.length,
+        totalChars,
         records,
     };
 }
@@ -451,14 +481,15 @@ async function ingestDocument(
 ) {
     const method = normalizeChunkingMethod(options.chunkingMethod);
     const collection = await getOrCreateCollection(method);
-    const { sourceFilename, textLength, records } = await buildRecords(
+    const { sourceFilename, totalChars, records } = await buildRecords(
         filePath,
-        method
+        method,
+        options.fileId
     );
 
     console.log("PDF loaded:", sourceFilename);
     console.log("Chunking method:", method);
-    console.log("Characters:", textLength);
+    console.log("Characters:", totalChars);
     console.log("Vector records:", records.length);
     console.log("Collection:", getCollectionName(method));
 

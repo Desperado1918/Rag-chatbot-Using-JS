@@ -105,9 +105,6 @@ async function retrieveVectorHits(question, collectionName, allowedSources = nul
     try {
         const results = await collection.query(queryParams);
 
-        console.log("RAW DISTANCES:");
-        console.dir(results.distances, { depth: null });
-
         return formatResults(results);
     } catch (error) {
         throw createServiceError(
@@ -171,9 +168,11 @@ function expandHierarchicalParents(childHits) {
             similarity: childHit.similarity,
             metadata: {
                 source: childHit.metadata.source,
+                file_id: childHit.metadata.file_id || null,
                 parentId,
                 parentNumber: childHit.metadata.parentNumber,
                 matchedChildNumber: childHit.metadata.childNumber,
+                pageNumber: childHit.metadata.pageNumber || null,
                 chunkingMethod: "hierarchical",
             },
         });
@@ -183,7 +182,7 @@ function expandHierarchicalParents(childHits) {
     const parentCount = parentMap.size;
     console.log(
         `[Hierarchical Dedup] ${childCount} child hits → ${parentCount} unique parents ` +
-            `(${childCount > 0 ? ((1 - parentCount / childCount) * 100).toFixed(1) : 0}% dedup rate)`
+        `(${childCount > 0 ? ((1 - parentCount / childCount) * 100).toFixed(1) : 0}% dedup rate)`
     );
 
     return Array.from(parentMap.values());
@@ -246,12 +245,12 @@ function hybridRerank(hits, question) {
 
     console.log(
         `[Hybrid Re-Rank] ${hits.length} filtered hits → top ${rankedHits.length} ` +
-            `(threshold=${config.retrieval.similarityThreshold}, topN=${config.retrieval.topNChunks}, queryTokens=${queryTokens.length})`
+        `(threshold=${config.retrieval.similarityThreshold}, topN=${config.retrieval.topNChunks}, queryTokens=${queryTokens.length})`
     );
     rankedHits.forEach((h, i) => {
         console.log(
             `  ${i + 1}. sim=${h.similarity.toFixed(4)} keyword=${h.matchRatio.toFixed(2)} ` +
-                `hybrid=${h.hybridScore.toFixed(4)} preview="${h.text.replace(/\s+/g, " ").slice(0, 80)}"`
+            `hybrid=${h.hybridScore.toFixed(4)} preview="${h.text.replace(/\s+/g, " ").slice(0, 80)}"`
         );
     });
 
@@ -285,7 +284,7 @@ function compressContext(hits, question) {
 
         // Split text into sentences (naïve approach using punctuation)
         const sentences = hit.text.match(/[^.!?]+[.!?]+/g) || [hit.text];
-        
+
         const relevantSentences = sentences.filter((sentence) => {
             const sentenceLower = sentence.toLowerCase();
             return queryTokens.some((token) => sentenceLower.includes(token));
@@ -299,11 +298,11 @@ function compressContext(hits, question) {
             if (!relevantSentences.includes(sentences[sentences.length - 1])) {
                 relevantSentences.push(sentences[sentences.length - 1]);
             }
-            
+
             // Reconstruct text with ellipses for omitted parts
             let compressedText = "";
             let lastIdx = -1;
-            
+
             for (const sentence of relevantSentences) {
                 const idx = sentences.indexOf(sentence);
                 if (lastIdx !== -1 && idx > lastIdx + 1) {
@@ -312,7 +311,7 @@ function compressContext(hits, question) {
                 compressedText += sentence.trim() + " ";
                 lastIdx = idx;
             }
-            
+
             return { ...hit, text: compressedText.trim(), compressed: true };
         }
 
@@ -336,7 +335,7 @@ function logRetrievedChunks(rawHits, filteredHits, contextChunks, chunkingMethod
 
         console.log(
             `${index + 1}. source=${source}, chunk=${chunk}, parent=${parent}, ` +
-                `dist=${hit.distance?.toFixed(4)}, sim=${hit.similarity}, preview="${preview}"`
+            `dist=${hit.distance?.toFixed(4)}, sim=${hit.similarity}, preview="${preview}"`
         );
     });
 
@@ -355,11 +354,13 @@ function logRetrievedChunks(rawHits, filteredHits, contextChunks, chunkingMethod
 function buildSources(chunks) {
     return chunks.map((chunk) => ({
         source: chunk.metadata.source || "unknown",
+        file_id: chunk.metadata.file_id || null,
         chunkingMethod: chunk.metadata.chunkingMethod || "standard",
         chunkNumber: chunk.metadata.chunkNumber || null,
         parentId: chunk.metadata.parentId || null,
         parentNumber: chunk.metadata.parentNumber || null,
         matchedChildNumber: chunk.metadata.matchedChildNumber || null,
+        pageNumber: chunk.metadata.pageNumber || null,
         similarity: chunk.similarity,
         text: chunk.text,
     }));
