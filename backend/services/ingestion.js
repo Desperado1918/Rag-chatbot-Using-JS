@@ -257,9 +257,6 @@ function cleanExtractedText(text) {
             continue;
         }
 
-        if (line.length < 20 && !/^[A-Z]/.test(line)) {
-            continue;
-        }
 
         if (
             /^[a-zA-Zα-ωΑ-Ω\s\d\(\)\[\]\{\}:,\-∈θηφλ]+$/.test(line) &&

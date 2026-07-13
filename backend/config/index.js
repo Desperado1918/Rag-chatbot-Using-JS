@@ -73,6 +73,7 @@ const config = {
         hybridWeightSemantic: parseFloat(process.env.RAG_HYBRID_WEIGHT_SEMANTIC) || 0.7,
         hybridWeightKeyword: parseFloat(process.env.RAG_HYBRID_WEIGHT_KEYWORD) || 0.3,
         slidingWindowSize: parseInt(process.env.RAG_SLIDING_WINDOW_SIZE, 10) || 10, // Recent messages to include in prompt
+        compressContext: process.env.RAG_COMPRESS_CONTEXT === "true", // Disable compression by default to avoid loss of details
     },
 
     // -----------------------------------------------------------------------
@@ -92,7 +93,7 @@ const config = {
     // Document Defaults
     // -----------------------------------------------------------------------
     documents: {
-        uploadDir: "./uploads",
+        uploadDir: "./documents",
         defaultPath: "./documents/notes.pdf",
     },
 
@@ -100,10 +101,12 @@ const config = {
     // LLM Generation
     // -----------------------------------------------------------------------
     generation: {
-        temperature: 0.7,
+        temperature: parseFloat(process.env.RAG_TEMPERATURE) || 0.2, // Lower temperature to prevent hallucination in Q&A
         topP: 0.9,
         repeatPenalty: 1.1,
     },
+
+    safeUnknownAnswer: process.env.SAFE_UNKNOWN_ANSWER || "I do not know the answer based on the provided documents.",
 
     // -----------------------------------------------------------------------
     // Conversation
@@ -119,6 +122,23 @@ const config = {
     // -----------------------------------------------------------------------
     metadataFilePath: process.env.METADATA_FILE_PATH || "./data/chats-metadata.json",
     metadataDebounceMs: 300,
+
+    // -----------------------------------------------------------------------
+    // Authentication
+    // -----------------------------------------------------------------------
+    auth: {
+        bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS, 10) || 12,
+        jwtSecret: process.env.JWT_SECRET,                                      // MUST be set, validated at startup
+        accessTokenExpiry: process.env.JWT_ACCESS_EXPIRY || "15m",
+        refreshTokenExpiry: process.env.JWT_REFRESH_EXPIRY || "7d",
+        refreshTokenExpiryMs: 7 * 24 * 60 * 60 * 1000,                          // 7 days in ms (for cookies / DB TTL)
+        accessTokenExpiryMs: 15 * 60 * 1000,                                    // 15 min in ms (for cookies)
+        maxFailedLoginsBeforeCaptcha: parseInt(process.env.MAX_FAILED_LOGINS_BEFORE_CAPTCHA, 10) || 5,
+        lockoutDurationMs: parseInt(process.env.LOCKOUT_DURATION_MS, 10) || 60 * 1000, // Short secondary lockout: 1 min
+        verifyTokenExpiry: 24 * 60 * 60 * 1000,                                 // 24 h for email verification
+        captchaSecret: process.env.CAPTCHA_SECRET || "",                         // Verification secret for reCAPTCHA / hCaptcha
+        captchaVerifyUrl: process.env.CAPTCHA_VERIFY_URL || "https://www.google.com/recaptcha/api/siteverify",
+    },
 
     // -----------------------------------------------------------------------
     // Logging (pino)

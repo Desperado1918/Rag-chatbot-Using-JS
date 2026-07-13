@@ -54,15 +54,40 @@ async function generateCompletion(prompt, options = {}) {
 // Ollama Provider
 // ---------------------------------------------------------------------------
 
+async function getModelToUse(requestedModel) {
+    try {
+        const response = await axios.get(`${config.ollama.baseUrl}/api/tags`, { timeout: 3000 });
+        if (response.data && Array.isArray(response.data.models)) {
+            const models = response.data.models.map(m => m.name);
+            if (models.length === 0) {
+                return requestedModel;
+            }
+            // Check if requestedModel exists (either exact match or matching prefix)
+            const exactMatch = models.find(m => m === requestedModel || m.split(":")[0] === requestedModel.split(":")[0]);
+            if (exactMatch) {
+                return exactMatch;
+            }
+            // Fallback to the first available model
+            console.warn(`[Ollama] Model '${requestedModel}' not found. Falling back to '${models[0]}'.`);
+            return models[0];
+        }
+    } catch (e) {
+        // Connection failed, let it propagate or use requestedModel
+    }
+    return requestedModel;
+}
+
 async function streamOllama(messages, options, handlers) {
     let fullResponse = "";
     let bufferedLine = "";
+    let modelUsed = options.model || config.ollama.chatModel;
 
     try {
+        modelUsed = await getModelToUse(modelUsed);
         const response = await axios.post(
             `${config.ollama.baseUrl}/api/chat`,
             {
-                model: options.model || config.ollama.chatModel,
+                model: modelUsed,
                 messages,
                 stream: true,
                 options: {
@@ -127,20 +152,28 @@ async function streamOllama(messages, options, handlers) {
             });
         });
     } catch (error) {
+        if (error.code === "ECONNREFUSED" || error.message?.includes("Network Error")) {
+            throw createServiceError(
+                `Ollama is not running. Please search for and start the Ollama application on your machine.`
+            );
+        }
+        
+        const errorMsg = error.response?.data?.error || error.message;
         throw createServiceError(
-            `Ollama is not responding at ${config.ollama.baseUrl}. ` +
-            `Make sure Ollama is running and the "${config.ollama.chatModel}" model is installed. ` +
-            `(Run: ollama pull ${config.ollama.chatModel})`
+            `Ollama failed to generate response using model "${modelUsed}": ${errorMsg}. ` +
+            `Please run "ollama pull ${modelUsed}" in a terminal to install it.`
         );
     }
 }
 
 async function generateOllamaCompletion(prompt, options = {}) {
+    let modelUsed = options.model || config.ollama.chatModel;
     try {
+        modelUsed = await getModelToUse(modelUsed);
         const response = await axios.post(
             `${config.ollama.baseUrl}/api/generate`,
             {
-                model: options.model || config.ollama.chatModel,
+                model: modelUsed,
                 prompt,
                 stream: false,
                 options: {
@@ -154,8 +187,16 @@ async function generateOllamaCompletion(prompt, options = {}) {
 
         return (response.data.response || "").trim();
     } catch (error) {
+        if (error.code === "ECONNREFUSED" || error.message?.includes("Network Error")) {
+            throw createServiceError(
+                `Ollama is not running. Please search for and start the Ollama application on your machine.`
+            );
+        }
+        
+        const errorMsg = error.response?.data?.error || error.message;
         throw createServiceError(
-            `Ollama completion failed: ${error.message}`
+            `Ollama completion failed using model "${modelUsed}": ${errorMsg}. ` +
+            `Please run "ollama pull ${modelUsed}" in a terminal to install it.`
         );
     }
 }

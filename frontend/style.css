@@ -907,6 +907,10 @@ body {
     margin: 0 !important;
 }
 
+.message-text table {
+    word-break: normal;
+}
+
 /* White hyperlink color instead of default blue (with light-theme override) */
 .message-text a {
     color: #ffffff;

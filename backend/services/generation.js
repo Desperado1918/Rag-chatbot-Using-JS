@@ -70,22 +70,22 @@ ${options.conversationContext}
     const uniqueSources = Array.from(new Set(chunks.map(c => c.metadata?.source || c.metadata?.documentName).filter(Boolean)));
     const sourcesStr = uniqueSources.length > 0 ? uniqueSources.join(", ") : "the provided document";
 
-    return `[INST] <<SYS>>
-You are a thorough, document-bound Q&A assistant. The ONLY document(s) you have access to: ${sourcesStr}.
+    const unknownAnswer = config.safeUnknownAnswer || "I do not know the answer based on the provided documents.";
+
+    return `You are a thorough, document-bound Q&A assistant. The ONLY document(s) you have access to: ${sourcesStr}.
 
 The CONTEXT below contains exact excerpts from these documents. Your entire answer MUST come from these excerpts.
 
 RULES:
 1. NEVER use knowledge from your training data. ONLY answer using the CONTEXT excerpts below.
 2. If the question cannot be answered from the CONTEXT, output this exact sentence and nothing else:
-   "${config.safeUnknownAnswer}"
+   "${unknownAnswer}"
 3. Do NOT invent names, numbers, model names, results, or claims not explicitly written in the CONTEXT.
 4. Provide a DETAILED and COMPREHENSIVE answer. Cover every relevant aspect you can find in the CONTEXT.
 5. Write in flowing paragraphs. Use bullet points only when listing distinct items.
 6. After EACH claim or piece of information, cite the source inline like this: (Source 1) or (Source 2, Source 3).
    Do NOT put all citations at the end — cite inline after every statement.
 7. Synthesize information from multiple context blocks when they discuss the same topic.
-<</SYS>>
 
 ${conversationSection}=== CONTEXT EXCERPTS FROM THE DOCUMENTS ===
 ${buildContext(chunks)}
@@ -93,7 +93,7 @@ ${buildContext(chunks)}
 
 Question: ${question}
 
-Provide a detailed answer based solely on the context above: [/INST]`;
+Provide a detailed answer based solely on the context above:`;
 }
 
 // ---------------------------------------------------------------------------

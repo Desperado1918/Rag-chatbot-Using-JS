@@ -1,5 +1,55 @@
 [
   {
+    "_id": "6a5509ed65713bec8b4a88bc",
+    "title": "Retrieval-Augmented Generation Explained",
+    "messageCount": 18,
+    "lastMessagePreview": "Summarize the input processing stage without using the words 'query', 'prompt', ",
+    "isPinned": false,
+    "model": "llama3.1",
+    "createdAt": "2026-07-13T15:53:17.871Z",
+    "updatedAt": "2026-07-13T19:03:48.816Z"
+  },
+  {
+    "_id": "6a55085ca5db70c3404542d2",
+    "title": "New Chat",
+    "messageCount": 0,
+    "lastMessagePreview": "",
+    "isPinned": false,
+    "model": "llama3.1",
+    "createdAt": "2026-07-13T15:46:36.255Z",
+    "updatedAt": "2026-07-13T15:46:36.255Z"
+  },
+  {
+    "_id": "6a550813a5db70c3404542d0",
+    "title": "New Chat",
+    "messageCount": 0,
+    "lastMessagePreview": "",
+    "isPinned": false,
+    "model": "llama3.1",
+    "createdAt": "2026-07-13T15:45:23.266Z",
+    "updatedAt": "2026-07-13T15:45:23.266Z"
+  },
+  {
+    "_id": "6a550631a5db70c3404542cd",
+    "title": "New Chat",
+    "messageCount": 0,
+    "lastMessagePreview": "",
+    "isPinned": false,
+    "model": "llama3.1",
+    "createdAt": "2026-07-13T15:37:21.191Z",
+    "updatedAt": "2026-07-13T15:37:21.191Z"
+  },
+  {
+    "_id": "6a5287e958314e5e9c0d1dc0",
+    "title": "RAG Models Explained",
+    "messageCount": 2,
+    "lastMessagePreview": "How does RAG work?",
+    "isPinned": false,
+    "model": "qwen2.5:7b",
+    "createdAt": "2026-07-11T18:14:01.439Z",
+    "updatedAt": "2026-07-11T18:15:09.241Z"
+  },
+  {
     "_id": "6a47917103865a28cdafbf76",
     "title": "Retrieval-Augmented Generation Explanation",
     "messageCount": 4,

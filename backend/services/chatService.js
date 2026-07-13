@@ -185,22 +185,46 @@ function buildPromptMessages(recentMessages, retrievedChunks, conversationContex
     const messages = [];
 
     // System prompt
-    let systemContent = `You are a helpful, accurate assistant. Answer questions thoughtfully and cite sources when relevant context is provided.`;
+    let systemContent = `You are a thorough, document-bound Q&A assistant.
+You must answer questions based ONLY on the provided context excerpts. Do not use your training data or make up any information.
+If the context does not contain the answer, reply with: "${config.safeUnknownAnswer || "I do not know the answer based on the provided documents."}" and nothing else.
+
+RULES:
+1. ONLY answer using the provided CONTEXT excerpts.
+2. If the question cannot be answered from the CONTEXT, output the exact unknown sentence: "${config.safeUnknownAnswer || "I do not know the answer based on the provided documents."}" and nothing else. Do not explain why or add any extra text.
+3. Do NOT invent names, numbers, results, or claims not explicitly written in the CONTEXT.
+4. Provide a DETAILED and COMPREHENSIVE answer. Cover every relevant aspect you can find in the CONTEXT.
+5. Write in flowing paragraphs. Use bullet points only when listing distinct items.
+6. After EACH claim or piece of information, cite the source inline like this: (Source 1) or (Source 2, Source 3) or (Conversation Memory).
+   Do NOT put all citations at the end — cite inline after every statement.
+7. Synthesize information from multiple context blocks when they discuss the same topic.`;
 
     if (conversationContext) {
-        systemContent += `\n\n${conversationContext}`;
-    }
-
-    // Append retrieved context to system prompt if available
-    if (retrievedChunks.length > 0) {
-        const contextBlock = retrievedChunks
-            .map((chunk, i) => `[Context ${i + 1}]\n${chunk.text}`)
-            .join("\n\n---\n\n");
-
-        systemContent += `\n\nThe following is relevant context retrieved from past conversations and documents. Use it to inform your answer, but don't fabricate information not present in the context or your knowledge:\n\n${contextBlock}`;
+        systemContent += `\n\n=== CONVERSATION HISTORY SUMMARY ===\n${conversationContext}\n=== END SUMMARY ===`;
     }
 
     messages.push({ role: "system", content: systemContent });
+
+    // Append retrieved context as a system helper message
+    if (retrievedChunks.length > 0) {
+        const contextBlock = retrievedChunks
+            .map((chunk, i) => {
+                const source = chunk.metadata.source || "unknown";
+                const label = chunk.metadata.chunkingMethod === "hierarchical"
+                    ? `parent ${chunk.metadata.parentNumber || ""}`
+                    : `chunk ${chunk.metadata.chunkNumber || ""}`;
+                const name = chunk.metadata.chunkingMethod === "memory"
+                    ? "Conversation Memory"
+                    : `Source ${i + 1} (${source}, ${label})`;
+                return `=== ${name} ===\n${chunk.text}`;
+            })
+            .join("\n\n---\n\n");
+
+        messages.push({
+            role: "system",
+            content: `=== CONTEXT EXCERPTS FROM THE DOCUMENTS ===\n${contextBlock}\n=== END CONTEXT ===\n\nUse the above excerpts to answer the next user message according to the rules.`
+        });
+    }
 
     // Sliding window of recent messages
     for (const msg of recentMessages) {

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Authentication page for Research Assistant.">
+    <title>Authentication — Research Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f111a;
+            --card-bg: rgba(22, 28, 45, 0.45);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --primary: #4f46e5;
+            --primary-hover: #6366f1;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-input: rgba(255, 255, 255, 0.12);
+            --border-focus: #4f46e5;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Abstract glowing blobs for premium feel */
+        .glow-blob {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            filter: blur(40px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .glow-blob-1 {
+            top: -100px;
+            right: -100px;
+        }
+
+        .glow-blob-2 {
+            bottom: -150px;
+            left: -150px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 24px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .brand-logo {
+            font-size: 32px;
+            color: var(--primary-hover);
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-tagline {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 32px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 28px;
+            gap: 16px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 16px;
+            font-weight: 600;
+            padding: 10px 0;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--primary);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-input);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25);
+            background: rgba(0, 0, 0, 0.35);
+        }
+
+        /* Captcha section container */
+        .captcha-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .captcha-box {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border: 1px dashed var(--border-input);
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: var(--primary-hover);
+            user-select: none;
+            text-shadow: 0 0 4px rgba(99, 102, 241, 0.4);
+            font-family: monospace;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Fake distortion lines in captcha */
+        .captcha-box::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -10%;
+            width: 120%;
+            height: 2px;
+            background: rgba(99, 102, 241, 0.25);
+            transform: rotate(-5deg);
+        }
+
+        .captcha-box::after {
+            content: '';
+            position: absolute;
+            top: 40%;
+            left: -10%;
+            width: 120%;
+            height: 1px;
+            background: rgba(239, 68, 68, 0.25);
+            transform: rotate(8deg);
+        }
+
+        .refresh-captcha {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .refresh-captcha:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-submit:disabled {
+            background-color: var(--text-muted);
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .feedback-message {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .feedback-message.error {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            display: block;
+        }
+
+        .feedback-message.success {
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            display: block;
+        }
+
+        /* Spinner for loading state */
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading .spinner {
+            display: block;
+        }
+
+        .loading .btn-text {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glow-blob glow-blob-1"></div>
+    <div class="glow-blob glow-blob-2"></div>
+
+    <div class="auth-container">
+        <div class="brand-header">
+            <h1 class="brand-logo">Research Assistant</h1>
+            <p class="brand-tagline">Secure Grounded AI Conversations</p>
+        </div>
+
+        <div class="auth-card">
+            <div class="tabs">
+                <button class="tab-btn active" id="tabLogin">Sign In</button>
+                <button class="tab-btn" id="tabSignup">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="formLogin">
+                <div class="form-group">
+                    <label class="form-label" for="loginEmail">Email Address</label>
+                    <div class="input-wrapper">
+                        <input type="email" id="loginEmail" class="form-input" placeholder="you@example.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="loginPassword">Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <!-- Hidden captcha wrapper, will be unhidden if backend requests it -->
+                <div class="form-group" id="loginCaptchaGroup" style="display: none;">
+                    <label class="form-label" for="loginCaptchaToken">Please type: <strong id="loginCaptchaText">mock-captcha-token</strong></label>
+                    <div class="input-wrapper">
+                        <input type="text" id="loginCaptchaToken" class="form-input" placeholder="Type captcha above…">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnLoginSubmit">
+                    <span class="spinner"></span>
+                    <span class="btn-text">Sign In</span>
+                </button>
+            </form>
+
+            <!-- Signup Form (hidden by default) -->
+            <form id="formSignup" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label" for="signupEmail">Email Address</label>
+                    <div class="input-wrapper">
+                        <input type="email" id="signupEmail" class="form-input" placeholder="you@example.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="signupUsername">Username</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="signupUsername" class="form-input" placeholder="displayname" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="signupPassword">Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="signupPassword" class="form-input" placeholder="Min. 8 characters" required minlength="8" maxlength="128">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="signupConfirmPassword">Confirm Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="signupConfirmPassword" class="form-input" placeholder="Confirm your password" required minlength="8" maxlength="128">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="signupCaptchaInput">Security Captcha</label>
+                    <div class="captcha-container">
+                        <div class="captcha-box" id="signupCaptchaBox" title="Click to refresh">ABCD</div>
+                        <button type="button" class="refresh-captcha" id="btnRefreshCaptcha" title="Refresh Captcha">↻</button>
+                        <input type="text" id="signupCaptchaInput" class="form-input" placeholder="Enter captcha" required style="flex: 1;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnSignupSubmit">
+                    <span class="spinner"></span>
+                    <span class="btn-text">Sign Up</span>
+                </button>
+            </form>
+
+            <div id="feedback" class="feedback-message"></div>
+        </div>
+    </div>
+
+    <script>
+        const tabLogin = document.getElementById("tabLogin");
+        const tabSignup = document.getElementById("tabSignup");
+        const formLogin = document.getElementById("formLogin");
+        const formSignup = document.getElementById("formSignup");
+        const feedback = document.getElementById("feedback");
+        
+        const loginCaptchaGroup = document.getElementById("loginCaptchaGroup");
+        const loginCaptchaText = document.getElementById("loginCaptchaText");
+        const loginCaptchaToken = document.getElementById("loginCaptchaToken");
+
+        const signupCaptchaBox = document.getElementById("signupCaptchaBox");
+        const signupCaptchaInput = document.getElementById("signupCaptchaInput");
+        const btnRefreshCaptcha = document.getElementById("btnRefreshCaptcha");
+
+        let signupCaptchaValue = "";
+
+        // -------------------------------------------------------------------
+        // Captcha Generator (for Signup)
+        // -------------------------------------------------------------------
+        function generateCaptcha() {
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // readable chars (removed O, 0, I, 1)
+            let token = "";
+            for (let i = 0; i < 5; i++) {
+                token += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            signupCaptchaValue = token;
+            signupCaptchaBox.textContent = token;
+            signupCaptchaInput.value = "";
+        }
+
+        // Initialize Captcha
+        generateCaptcha();
+        signupCaptchaBox.addEventListener("click", generateCaptcha);
+        btnRefreshCaptcha.addEventListener("click", generateCaptcha);
+
+        // -------------------------------------------------------------------
+        // Tabs switching
+        // -------------------------------------------------------------------
+        tabLogin.addEventListener("click", () => {
+            tabLogin.classList.add("active");
+            tabSignup.classList.remove("active");
+            formLogin.style.display = "block";
+            formSignup.style.display = "none";
+            feedback.style.display = "none";
+        });
+
+        tabSignup.addEventListener("click", () => {
+            tabSignup.classList.add("active");
+            tabLogin.classList.remove("active");
+            formSignup.style.display = "block";
+            formLogin.style.display = "none";
+            feedback.style.display = "none";
+            generateCaptcha();
+        });
+
+        // Helper to show messages
+        function showFeedback(text, type) {
+            feedback.textContent = text;
+            feedback.className = `feedback-message ${type}`;
+            feedback.style.display = "block";
+        }
+
+        // Helper to parse cookies
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        // -------------------------------------------------------------------
+        // Form submissions
+        // -------------------------------------------------------------------
+        formLogin.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            feedback.style.display = "none";
+            
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
+            const captcha = loginCaptchaToken.value.trim();
+
+            const submitBtn = document.getElementById("btnLoginSubmit");
+            submitBtn.classList.add("loading");
+            submitBtn.disabled = true;
+
+            try {
+                const payload = { email, password };
+                if (captcha) {
+                    payload.captchaToken = captcha;
+                }
+
+                const res = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    if (data.error && data.error.includes("CAPTCHA verification required")) {
+                        loginCaptchaGroup.style.display = "block";
+                        loginCaptchaText.textContent = "mock-captcha-token";
+                        loginCaptchaToken.required = true;
+                        throw new Error("CAPTCHA required. Please type 'mock-captcha-token' below.");
+                    }
+                    throw new Error(data.error || "Login failed");
+                }
+
+                // Success! Redirect to home page
+                showFeedback("Login successful! Redirecting...", "success");
+                setTimeout(() => {
+                    window.location.href = "/";
+                }, 1000);
+
+            } catch (err) {
+                showFeedback(err.message, "error");
+            } finally {
+                submitBtn.classList.remove("loading");
+                submitBtn.disabled = false;
+            }
+        });
+
+        formSignup.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            feedback.style.display = "none";
+
+            const email = document.getElementById("signupEmail").value.trim();
+            const username = document.getElementById("signupUsername").value.trim();
+            const password = document.getElementById("signupPassword").value;
+            const confirmPassword = document.getElementById("signupConfirmPassword").value;
+            const captchaInput = signupCaptchaInput.value.trim().toUpperCase();
+
+            // 1. Confirm password check
+            if (password !== confirmPassword) {
+                showFeedback("Passwords do not match.", "error");
+                return;
+            }
+
+            // 2. Local Captcha verification
+            if (captchaInput !== signupCaptchaValue) {
+                showFeedback("Security captcha is incorrect. Please try again.", "error");
+                generateCaptcha();
+                return;
+            }
+
+            const submitBtn = document.getElementById("btnSignupSubmit");
+            submitBtn.classList.add("loading");
+            submitBtn.disabled = true;
+
+            try {
+                const res = await fetch("/api/auth/signup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password, username })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || "Signup failed");
+                }
+
+                showFeedback("Signup successful! Since this is a test environment, please check your server terminal console for the verification link to verify your account.", "success");
+                formSignup.reset();
+                generateCaptcha();
+                
+            } catch (err) {
+                showFeedback(err.message, "error");
+                generateCaptcha();
+            } finally {
+                submitBtn.classList.remove("loading");
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

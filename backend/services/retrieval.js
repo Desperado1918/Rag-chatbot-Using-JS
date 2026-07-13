@@ -217,12 +217,42 @@ function buildContextChunks(hits, chunkingMethod) {
  * @param {string} question - The user's question (for keyword extraction).
  * @returns {Object[]} - Top-N re-ranked hits.
  */
-function hybridRerank(hits, question) {
-    const queryTokens = question
+const STOPWORDS = new Set([
+    "what", "how", "why", "who", "whom", "this", "that", "these", "those",
+    "the", "and", "but", "when", "where", "with", "from", "into", "your",
+    "their", "them", "they", "then", "else", "than", "were", "been", "have",
+    "does", "doing", "did", "some", "more", "most", "only", "same", "such",
+    "very", "just", "should", "will", "would", "could", "about", "above",
+    "below", "under", "once", "here", "there"
+]);
+
+/**
+ * Clean and tokenize a query for keyword matching.
+ * Preserves words inside hyphens/underscores and filters out standard stopwords.
+ */
+function getQueryTokens(question) {
+    if (!question) return [];
+    return question
         .toLowerCase()
-        .replace(/[^\w\s]/g, "")
-        .split(/\s+/)
-        .filter((token) => token.length > 3);
+        .replace(/[^\w\s-]/g, " ")
+        .split(/[\s_-]+/)
+        .map(t => t.trim())
+        .filter(t => t.length >= 2 && !STOPWORDS.has(t));
+}
+
+// ---------------------------------------------------------------------------
+// Hybrid Re-Ranking
+// ---------------------------------------------------------------------------
+
+/**
+ * Apply hybrid re-ranking: blend cosine similarity with keyword match ratio.
+ *
+ * @param {Object[]} hits - Similarity-gated hits.
+ * @param {string} question - The user's question (for keyword extraction).
+ * @returns {Object[]} - Top-N re-ranked hits.
+ */
+function hybridRerank(hits, question) {
+    const queryTokens = getQueryTokens(question);
 
     const rankedHits = [...hits]
         .map((hit) => {
@@ -270,11 +300,12 @@ function hybridRerank(hits, question) {
  * @returns {Object[]} - Compressed hits.
  */
 function compressContext(hits, question) {
-    const queryTokens = question
-        .toLowerCase()
-        .replace(/[^\w\s]/g, "")
-        .split(/\s+/)
-        .filter((token) => token.length > 3);
+    // Skip if context compression is disabled in config
+    if (!config.retrieval.compressContext) {
+        return hits;
+    }
+
+    const queryTokens = getQueryTokens(question);
 
     if (queryTokens.length === 0) return hits;
 
