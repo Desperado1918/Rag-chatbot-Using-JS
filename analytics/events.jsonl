@@ -2,3 +2,9 @@
 {"event":"generation_completed","timestamp":"2026-06-30T06:08:40.919Z","conversationId":"6a435d1934cf08e12cadda8d","durationMs":78992}
 {"event":"message_sent","timestamp":"2026-06-30T11:36:15.307Z","conversationId":"6a43aa2f34cf08e12cadda95"}
 {"event":"generation_completed","timestamp":"2026-06-30T11:37:09.479Z","conversationId":"6a43aa2f34cf08e12cadda95","durationMs":54171}
+{"event":"document_uploaded","timestamp":"2026-07-14T08:36:11.205Z","filename":"dog pdf.pdf","fileSize":9505,"durationMs":4835,"chunkCount":158,"chunkingMethod":"hierarchical"}
+{"event":"document_uploaded","timestamp":"2026-07-14T08:58:20.076Z","filename":"magazine.pdf","fileSize":10197036,"durationMs":10177,"chunkCount":520,"chunkingMethod":"hierarchical"}
+{"event":"document_uploaded","timestamp":"2026-07-14T08:58:29.160Z","filename":"magazine.pdf","fileSize":10197036,"durationMs":8206,"chunkCount":520,"chunkingMethod":"hierarchical"}
+{"event":"document_uploaded","timestamp":"2026-07-14T09:24:30.839Z","filename":"cat pdf.pdf","fileSize":22273,"durationMs":2987,"chunkCount":120,"chunkingMethod":"hierarchical"}
+{"event":"document_uploaded","timestamp":"2026-07-14T09:26:51.489Z","filename":"magazine.pdf","fileSize":10197036,"durationMs":9279,"chunkCount":520,"chunkingMethod":"hierarchical"}
+{"event":"document_uploaded","timestamp":"2026-07-14T10:12:54.480Z","filename":"OIP.pdf","fileSize":23387,"durationMs":84,"chunkCount":0,"chunkingMethod":"hierarchical"}

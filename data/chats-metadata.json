@@ -1,43 +1,63 @@
 [
   {
+    "_id": "6a5600d220892681cef8464e",
+    "title": "Formula 1 Regulation Issues Explained",
+    "messageCount": 5,
+    "lastMessagePreview": "Can you tell me what is RAG?",
+    "isPinned": false,
+    "model": "llama3.1",
+    "createdAt": "2026-07-14T09:26:42.021Z",
+    "updatedAt": "2026-07-14T12:21:52.042Z"
+  },
+  {
+    "_id": "6a560ba620892681cef8465b",
+    "title": "Unknown PDF Contents Inquiry",
+    "messageCount": 2,
+    "lastMessagePreview": "Tell me what is in that pdf",
+    "isPinned": false,
+    "model": "llama3.1",
+    "createdAt": "2026-07-14T10:12:54.364Z",
+    "updatedAt": "2026-07-14T10:13:37.367Z"
+  },
+  {
+    "_id": "6a56004b20892681cef8464c",
+    "title": "New Chat",
+    "messageCount": 0,
+    "lastMessagePreview": "",
+    "isPinned": false,
+    "model": "llama3.1",
+    "createdAt": "2026-07-14T09:24:27.815Z",
+    "updatedAt": "2026-07-14T09:24:27.815Z"
+  },
+  {
+    "_id": "6a55f4f620892681cef84639",
+    "title": "Facts About Domesticated Canine Species",
+    "messageCount": 2,
+    "lastMessagePreview": "Can u tell me some facts about dogs?",
+    "isPinned": false,
+    "model": "llama3.1",
+    "createdAt": "2026-07-14T08:36:06.290Z",
+    "updatedAt": "2026-07-14T08:37:57.414Z"
+  },
+  {
+    "_id": "6a55ed7320892681cef84631",
+    "title": "Retrieval-Augmented Generation Explained",
+    "messageCount": 2,
+    "lastMessagePreview": "What is Retrieval-Augmented Generation?",
+    "isPinned": false,
+    "model": "llama3.1",
+    "createdAt": "2026-07-14T08:04:03.195Z",
+    "updatedAt": "2026-07-14T08:34:29.267Z"
+  },
+  {
     "_id": "6a5509ed65713bec8b4a88bc",
     "title": "Retrieval-Augmented Generation Explained",
-    "messageCount": 18,
-    "lastMessagePreview": "Summarize the input processing stage without using the words 'query', 'prompt', ",
+    "messageCount": 20,
+    "lastMessagePreview": "Can you tell me what are the advantages of RAG?",
     "isPinned": false,
     "model": "llama3.1",
     "createdAt": "2026-07-13T15:53:17.871Z",
-    "updatedAt": "2026-07-13T19:03:48.816Z"
-  },
-  {
-    "_id": "6a55085ca5db70c3404542d2",
-    "title": "New Chat",
-    "messageCount": 0,
-    "lastMessagePreview": "",
-    "isPinned": false,
-    "model": "llama3.1",
-    "createdAt": "2026-07-13T15:46:36.255Z",
-    "updatedAt": "2026-07-13T15:46:36.255Z"
-  },
-  {
-    "_id": "6a550813a5db70c3404542d0",
-    "title": "New Chat",
-    "messageCount": 0,
-    "lastMessagePreview": "",
-    "isPinned": false,
-    "model": "llama3.1",
-    "createdAt": "2026-07-13T15:45:23.266Z",
-    "updatedAt": "2026-07-13T15:45:23.266Z"
-  },
-  {
-    "_id": "6a550631a5db70c3404542cd",
-    "title": "New Chat",
-    "messageCount": 0,
-    "lastMessagePreview": "",
-    "isPinned": false,
-    "model": "llama3.1",
-    "createdAt": "2026-07-13T15:37:21.191Z",
-    "updatedAt": "2026-07-13T15:37:21.191Z"
+    "updatedAt": "2026-07-14T05:13:55.016Z"
   },
   {
     "_id": "6a5287e958314e5e9c0d1dc0",
