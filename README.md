@@ -56,6 +56,27 @@ flowchart TD
     end
 ```
 
+### Query Processing Pipeline (Design Approach)
+
+Each query is embedded and searched against both the document and conversation-memory collections. Hits below the similarity gate are dropped; survivors are hybrid re-ranked (weighting cosine similarity and keyword overlap), compressed to the most relevant sentences, and passed to the local LLM for a streamed reply.
+
+```mermaid
+flowchart LR
+    1["1. User Question<br/><i>typed in chat UI</i>"] --> 2["2. Query Embedding<br/><i>Xenova MiniLM · 384-d</i>"]
+    2 --> 3["3. Dual-Space Retrieval<br/><i>documents + memory (top 10)</i>"]
+    3 --> 4["4. Similarity Gate<br/><i>keep hits ≥ 0.40</i>"]
+    4 --> 5["5. Hybrid Re-rank<br/><i>0.7 cosine + 0.3 keyword</i>"]
+    5 --> 6["6. Context Compression<br/><i>extractive, top 5 chunks</i>"]
+    6 --> 7["7. Ollama LLM<br/><i>qwen2.5:7b · temperature</i>"]
+    7 --> 8["8. Streamed Answer<br/><i>tokens via SSE to chat UI</i>"]
+    
+    classDef default fill:#e6f2ff,stroke:#003366,stroke-width:2px,color:#003366;
+    classDef highlight fill:#fdf6e2,stroke:#b58900,stroke-width:2px,color:#b58900;
+    
+    class 1,2,3,6,7,8 default;
+    class 4,5 highlight;
+```
+
 ---
 
 ## 🏁 Quick Start Guide (How to Run Now)
