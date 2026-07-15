@@ -1,18 +1,18 @@
-# 🧠 Local Offline-First RAG Chatbot
+# Local Offline-First RAG Chatbot
 
 An enterprise-grade, **100% offline, retrieval-augmented generation (RAG)** chatbot prototype. Built on a lightweight, decoupled Node.js and Vanilla JS stack, this application extracts knowledge from local PDF documents and generates answers locally using ChromaDB, ONNX-powered embeddings, and Ollama.
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
-*   **🔒 100% Offline Privacy**: Zero data egress. Embeddings, vector searches, database transactions, and LLM text generation occur entirely on your local machine.
-*   **📄 Layout-Aware PDF Parser**: Grouping algorithms prevent multi-column layout text merging, ensuring clean vertical text flows from academic and industrial PDFs.
-*   **🧬 Hierarchical Parent-Child Chunking**: Splits large parent context chunks (2000 chars) into small child vectors (400 chars) for high-precision semantic lookup, expanding back to parent context for rich LLM responses.
-*   **⚖️ Similarity-Gated Hybrid Re-ranking**: Combines HNSW Cosine Similarity search (weighted 70%) with Keyword Token Overlap (weighted 30%), filtered through a hard similarity gate ($Cosine\ Similarity \ge 0.40$).
-*   **⚡ Extractive Context Compression**: Sentence-level parsing trims down retrieved context to only sentences containing query terms, saving up to 40% of prompt context space.
-*   **🛠️ RAG Pipeline Inspector Sandbox**: An interactive browser-based testing arena to upload test documents, view step-by-step processing logs via SSE, and test query runs.
-*   **🛡️ Robust Security & Auth**: Password hashing with Bcrypt, access/refresh JWT cookie rotation, double-submit CSRF prevention, and built-in rate-limiting.
+*   ** 100% Offline Privacy**: Zero data egress. Embeddings, vector searches, database transactions, and LLM text generation occur entirely on your local machine.
+*   ** Layout-Aware PDF Parser**: Grouping algorithms prevent multi-column layout text merging, ensuring clean vertical text flows from academic and industrial PDFs.
+*   ** Hierarchical Parent-Child Chunking**: Splits large parent context chunks (2000 chars) into small child vectors (400 chars) for high-precision semantic lookup, expanding back to parent context for rich LLM responses.
+*   ** Similarity-Gated Hybrid Re-ranking**: Combines HNSW Cosine Similarity search (weighted 70%) with Keyword Token Overlap (weighted 30%), filtered through a hard similarity gate ($Cosine\ Similarity \ge 0.40$).
+*   ** Extractive Context Compression**: Sentence-level parsing trims down retrieved context to only sentences containing query terms, saving up to 40% of prompt context space.
+*   ** RAG Pipeline Inspector Sandbox**: An interactive browser-based testing arena to upload test documents, view step-by-step processing logs via SSE, and test query runs.
+*   ** Robust Security & Auth**: Password hashing with Bcrypt, access/refresh JWT cookie rotation, double-submit CSRF prevention, and built-in rate-limiting.
 
 ---
 
@@ -90,7 +90,7 @@ If you have downloaded this project and want to run it immediately:
 
 ---
 
-## 💻 Local Machine Environment Setup Guide
+##  Local Machine Environment Setup Guide
 
 To implement or run this project on a brand new local computer, follow this setup guide for every required tool.
 
@@ -135,7 +135,7 @@ Ollama runs the AI models locally, leveraging GPU acceleration if available.
 
 ---
 
-## 🛠️ Step-by-Step Implementation Guide (From Scratch)
+##  Step-by-Step Implementation Guide (From Scratch)
 
 Here is how you can recreate and implement this entire project folder by folder, file by file.
 
@@ -255,7 +255,7 @@ Write your files in the `frontend/` folder:
 
 ---
 
-## 🔍 Troubleshooting
+##  Troubleshooting
 
 *   **Ollama connection error (`ECONNREFUSED` or timeout)**: Ensure Ollama is running (`ollama serve`) and accessible at the host configured in your `.env` file (usually `http://127.0.0.1:11434`).
 *   **MongoDB fails to connect**: If Docker isn't running, the system will automatically spin up `mongodb-memory-server` in RAM. Note: This will not persist data across system restarts. Run `docker-compose up -d` to enable database persistence.
