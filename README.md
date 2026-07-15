@@ -1,10 +1,10 @@
-# Local Offline-First RAG Chatbot
+#  Local Offline-First RAG Chatbot
 
 An enterprise-grade, **100% offline, retrieval-augmented generation (RAG)** chatbot prototype. Built on a lightweight, decoupled Node.js and Vanilla JS stack, this application extracts knowledge from local PDF documents and generates answers locally using ChromaDB, ONNX-powered embeddings, and Ollama.
 
 ---
 
-## Key Features
+##  Key Features
 
 *   ** 100% Offline Privacy**: Zero data egress. Embeddings, vector searches, database transactions, and LLM text generation occur entirely on your local machine.
 *   ** Layout-Aware PDF Parser**: Grouping algorithms prevent multi-column layout text merging, ensuring clean vertical text flows from academic and industrial PDFs.
@@ -16,49 +16,49 @@ An enterprise-grade, **100% offline, retrieval-augmented generation (RAG)** chat
 
 ---
 
-## 📐 System Architecture
+##  System Architecture
 
 The application splits computational workloads into two decoupled, asynchronous pipelines:
 
 ```mermaid
 flowchart TD
-    subgraph Ingestion_Pipeline [Document Ingestion Pipeline]
-        A[PDF Upload via Multer] --> B[pdfjs-dist Layout-Aware Parsing]
-        B --> C[Bibliography Truncation Filter]
-        C --> D[Regex Noise Cleaning]
+    subgraph Ingestion_Pipeline ["Document Ingestion Pipeline"]
+        A["PDF Upload via Multer"] --> B["pdfjs-dist Layout-Aware Parsing"]
+        B --> C["Bibliography Truncation Filter"]
+        C --> D["Regex Noise Cleaning"]
         D --> E{Chunking Strategy}
-        E -->|Standard Chunking| F[Standard Split: 1000 Chars]
-        E -->|Hierarchical Chunking| G[Parent Chunks: 2000 Chars / Child Chunks: 400 Chars]
-        F --> H[@xenova/transformers Local Embedding]
+        E -->|Standard Chunking| F["Standard Split: 1000 Chars"]
+        E -->|Hierarchical Chunking| G["Parent Chunks: 2000 Chars / Child Chunks: 400 Chars"]
+        F --> H["@xenova/transformers Local Embedding"]
         G --> H
-        H --> I[(ChromaDB: Document Collections)]
-        I --> J[MongoDB: Update Document Status to Completed]
+        H --> I[("ChromaDB: Document Collections")]
+        I --> J["MongoDB: Update Document Status to Completed"]
     end
 
-    subgraph Query_Generation_Engine [Query-Retrieval-Generation Engine]
-        K[User Query Input] --> L[MongoDB: Save Message]
-        L --> M[transformers: Embed Query]
-        M --> N[(Query ChromaDB Collections)]
-        N -->|Document Collection Hits| O[Cosine Similarity Gate >= 0.40]
-        N -->|Conversation Memory Hits| P[Recall Historical Context]
+    subgraph Query_Generation_Engine ["Query-Retrieval-Generation Engine"]
+        K["User Query Input"] --> L["MongoDB: Save Message"]
+        L --> M["transformers: Embed Query"]
+        M --> N[("Query ChromaDB Collections")]
+        N -->|Document Collection Hits| O["Cosine Similarity Gate >= 0.40"]
+        N -->|Conversation Memory Hits| P["Recall Historical Context"]
         O --> Q{Is Hierarchical?}
-        Q -->|Yes| R[Map Child ID -> Fetch Metadata Parent Text]
-        Q -->|No| S[Deduplicate and Clean Chunks]
-        R --> T[Merge Context & Keyword Token Overlap Re-ranking]
+        Q -->|Yes| R["Map Child ID -> Fetch Metadata Parent Text"]
+        Q -->|No| S["Deduplicate and Clean Chunks"]
+        R --> T["Merge Context & Keyword Token Overlap Re-ranking"]
         S --> T
         P --> T
-        T --> U[Extractive Sentence-Level Context Compression]
-        U --> V[Dynamic Prompt Construction]
-        V --> W[Ollama HTTP API Streaming Connection]
-        W --> X[Server-Sent Events SSE Response Stream]
-        X --> Y[MongoDB: Save Assistant Message & Cache Summary]
-        Y --> Z[Background: Memory Pipeline Turn Ingestion]
+        T --> U["Extractive Sentence-Level Context Compression"]
+        U --> V["Dynamic Prompt Construction"]
+        V --> W["Ollama HTTP API Streaming Connection"]
+        W --> X["Server-Sent Events SSE Response Stream"]
+        X --> Y["MongoDB: Save Assistant Message & Cache Summary"]
+        Y --> Z["Background: Memory Pipeline Turn Ingestion"]
     end
 ```
 
 ---
 
-## 🏁 Quick Start Guide (How to Run Now)
+##  Quick Start Guide (How to Run Now)
 
 If you have downloaded this project and want to run it immediately:
 
@@ -90,7 +90,7 @@ If you have downloaded this project and want to run it immediately:
 
 ---
 
-##  Local Machine Environment Setup Guide
+## 💻 Local Machine Environment Setup Guide
 
 To implement or run this project on a brand new local computer, follow this setup guide for every required tool.
 
