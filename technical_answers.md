@@ -40,38 +40,38 @@ The application is structured around two distinct operational pipelines: **Docum
 
 ```mermaid
 flowchart TD
-    subgraph Ingestion Pipeline [Document Ingestion]
-        A[PDF File Upload] --> B[pdfjs-dist: Layout-Aware Parsing]
-        B --> C[Bibliography Truncation Filter]
-        C --> D[Regex Text Cleaning]
+    subgraph Ingestion_Pipeline ["Document Ingestion"]
+        A["PDF File Upload"] --> B["pdfjs-dist: Layout-Aware Parsing"]
+        B --> C["Bibliography Truncation Filter"]
+        C --> D["Regex Text Cleaning"]
         D --> E{Chunking Method}
-        E -->|Standard| F[Standard split: 1000 chars]
-        E -->|Hierarchical| G[Parent: 2000 chars / Child: 400 chars]
-        F --> H[@xenova/transformers: Embed Text]
+        E -->|Standard| F["Standard split: 1000 chars"]
+        E -->|Hierarchical| G["Parent: 2000 chars / Child: 400 chars"]
+        F --> H["@xenova/transformers: Embed Text"]
         G --> H
-        H --> I[(ChromaDB: Vector Index)]
-        I --> J[Update MongoDB Document: completed]
+        H --> I[("ChromaDB: Vector Index")]
+        I --> J["Update MongoDB Document: completed"]
     end
 
-    subgraph Query & Streaming Pipeline [Query/Response Flow]
-        K[User Message input] --> L[Save Message to MongoDB]
-        L --> M[Generate Query Vector]
-        M --> N[(Query ChromaDB)]
-        N -->|Document Hits| O[Cosine Similarity Gate >= 0.40]
-        N -->|Memory Hits| P[Recall Past Conversation Context]
-        O --> Q{Hierarchical?}
-        Q -->|Yes| R[Map Child Vector -> Expand Parent Chunk]
-        Q -->|No| S[Deduplicate by Text]
-        R --> T[Merge Hits & Apply Hybrid Re-Ranking]
+    subgraph Query_Streaming_Pipeline ["Query/Response Flow"]
+        K["User Message input"] --> L["Save Message to MongoDB"]
+        L --> M["Generate Query Vector"]
+        M --> N[("Query ChromaDB")]
+        N -->|Document Hits| O["Cosine Similarity Gate >= 0.40"]
+        N -->|Memory Hits| P["Recall Past Conversation Context"]
+        O --> Q{Is Hierarchical?}
+        Q -->|Yes| R["Map Child Vector -> Expand Parent Chunk"]
+        Q -->|No| S["Deduplicate by Text"]
+        R --> T["Merge Hits & Apply Hybrid Re-Ranking"]
         S --> T
         P --> T
-        T --> U[Extractive Sentence-Level Compression]
-        U --> V[Build Context Prompt]
-        V --> W[Fetch Message History Sliding Window]
-        W --> X[Ollama api/chat SSE Stream]
-        X --> Y[Stream Tokens to User via SSE]
-        Y --> Z[Save Assistant Message to MongoDB]
-        Z --> AA[Background: Index Turn & Summarize]
+        T --> U["Extractive Sentence-Level Compression"]
+        U --> V["Build Context Prompt"]
+        V --> W["Fetch Message History Sliding Window"]
+        W --> X["Ollama api/chat SSE Stream"]
+        X --> Y["Stream Tokens to User via SSE"]
+        Y --> Z["Save Assistant Message to MongoDB"]
+        Z --> AA["Background: Index Turn & Summarize"]
     end
 ```
 
